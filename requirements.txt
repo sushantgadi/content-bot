@@ -1,0 +1,3 @@
+moviepy==1.0.3
+mpmath==1.2.1
+imagemagick
