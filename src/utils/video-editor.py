@@ -1,4 +1,8 @@
 import moviepy.editor as mp
+import os
+import random
+import json
+
 
 VIDEO_DURATION_IN_SECONDS = 90
 VIDEO_TEXT_WIDTH = 600
@@ -47,11 +51,10 @@ def generate_video_with_text(topic_name, audio_file, video_file, output_folder, 
                                 color=VIDEO_FONT_COLOR, bg_color=VIDEO_FONT_BACKGROUND).set_duration(text_duration)
         text_clips.append(text_clip)
 
-
     thanks_text_clip = mp.TextClip(thanks_message, fontsize=VIDEO_FONT_SIZE, font=VIDEO_FONT_FAMILY,
-                                    color=VIDEO_FONT_COLOR, bg_color=VIDEO_FONT_BACKGROUND).set_duration(4)
+                                   color=VIDEO_FONT_COLOR, bg_color=VIDEO_FONT_BACKGROUND).set_duration(4)
     text_clips.append(thanks_text_clip)
-    
+
     video_with_text = mp.CompositeVideoClip([output_video, mp.concatenate_videoclips(
         text_clips, method="compose").set_opacity(VIDEO_FONT_OPACITY).set_position(VIDEO_TEXT_POSITION)])
 
@@ -62,5 +65,30 @@ def generate_video_with_text(topic_name, audio_file, video_file, output_folder, 
                                     threads=VIDEO_WRITE_THREADS, fps=VIDEO_FPS)
 
 
-generate_video_with_text("General Life Rules", "/Users/sgadi3/Documents/git_repo/poc/content-bot/assets/motivation/audios/epicaly-113907.mp3", "/Users/sgadi3/Documents/git_repo/poc/content-bot/assets/motivation/videos/Pexels Videos 1580455.mp4", "/Users/sgadi3/Documents/git_repo/poc/content-bot/output/motivation", "Here are some general life rules that can help guide you towards a fulfilling and successful life:", "Thanks!",
-                         "1. Be true to yourself: Live your life in accordance with your own values, beliefs, and priorities.# 2. Pursue your passions: Find something you're passionate about and make it a central part of your life.# 3. Take care of your health: Eat well, exercise regularly, get enough sleep, and take care of your mental health.# 4. Cultivate positive relationships: Surround yourself with people who support and inspire you, and who share your values.# 5. Learn from your mistakes: Accept that you will make mistakes, but use them as an opportunity to learn and grow.# 6. Practice gratitude: Take time to appreciate the good things in your life, and express gratitude to others.# 7. Be open to new experiences: Try new things and step outside of your comfort zone to broaden your horizons and discover new passions.# 8. Work hard and persevere: Achieving your goals often requires hard work and determination, so don't give up easily.# 9. Be kind and compassionate: Treat others with respect, kindness, and empathy.# 10. Make a positive impact: Look for ways to contribute to your community and make a positive difference in the world.")
+def select_audio_video(audio_folder, video_folder):
+    audio_files = os.listdir(audio_folder)
+    video_files = os.listdir(video_folder)
+    audio_file = random.choice(audio_files)
+    video_file = random.choice(video_files)
+    selected_audio_file = audio_folder+"/"+audio_file
+    selected_video_file = video_folder+"/"+video_file
+    print("selected_audio_file= ", selected_audio_file)
+    print("selected_video_file= ", selected_video_file)
+    return selected_audio_file, selected_video_file
+
+
+def initiate_content_generation():
+    f = open(
+        '/Users/sgadi3/Documents/git_repo/poc/content-bot/assets/text/data.json', "r")
+    json_data = json.loads(f.read())
+
+    output_folder = "/Users/sgadi3/Documents/git_repo/poc/content-bot/output/motivation"
+
+    for data in json_data:
+        selected_audio_file, selected_video_file = select_audio_video(
+            "/Users/sgadi3/Documents/git_repo/poc/content-bot/assets/motivation/audios", "/Users/sgadi3/Documents/git_repo/poc/content-bot/assets/motivation/videos")
+        generate_video_with_text(data['topic_name'], selected_audio_file,
+                                 selected_video_file, output_folder, data['heading'], data['thanks_message'], data['text'])
+    f.close()
+
+initiate_content_generation()
